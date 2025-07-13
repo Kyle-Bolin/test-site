@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 1.0.0 (2025-07-13)
+
+
+### Features
+
+* add Docker build workflows and OIDC setup documentation ([847991d](https://github.com/Kyle-Bolin/test-site/commit/847991de76031d7051ebfd889b7bd274fdf9aa80))
+* add semantic versioning ([2132cdf](https://github.com/Kyle-Bolin/test-site/commit/2132cdfd8034f9f4e3ea6b911e771ba446a27754))
+* dockerize ([6dd9136](https://github.com/Kyle-Bolin/test-site/commit/6dd913610cc56cf2587befd9b44590de9f382d0f))
+
 ## [Unreleased]
 
 ### Added
@@ -28,4 +37,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - None
 
 ### Security
-- None 
+- None
