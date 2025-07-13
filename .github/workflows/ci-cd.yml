@@ -1,5 +1,11 @@
+# Comprehensive CI/CD Pipeline for Next.js Application
+# This workflow handles testing, building, releasing, and Docker deployment
 name: CI/CD Pipeline
 
+# Trigger pipeline on:
+# - Push to main/develop branches
+# - Tag pushes (for versioned releases)
+# - Pull requests to main (for validation)
 on:
   push:
     branches: [ main, develop ]
@@ -7,11 +13,14 @@ on:
   pull_request:
     branches: [ main ]
 
+# Global environment variables for Docker registry
 env:
   REGISTRY: docker.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Job 1: Test and Build
+  # Runs on all pushes and PRs to validate code quality
   test-and-build:
     runs-on: ubuntu-latest
     permissions:
@@ -19,74 +28,96 @@ jobs:
       id-token: write
 
     steps:
+      # Step 1: Get the source code
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Full history needed for semantic release
 
+      # Step 2: Setup Node.js environment with caching
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'npm'  # Cache npm dependencies for faster builds
 
+      # Step 3: Install project dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm ci  # Clean install for reproducible builds
 
+      # Step 4: Run ESLint to check code quality
       - name: Run linting
         run: npm run lint
 
+      # Step 5: Run tests if they exist
       - name: Run tests
-        run: npm test --if-present
+        run: npm test --if-present  # Only run if test script exists
 
+      # Step 6: Build the Next.js application
       - name: Build application
         run: npm run build
 
+  # Job 2: Semantic Release
+  # Only runs on main branch to create GitHub releases and version bumps
   release:
-    needs: test-and-build
+    needs: test-and-build  # Wait for tests to pass first
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'  # Only on main branch
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+      contents: write      # Create releases and tags
+      issues: write        # Update issues
+      pull-requests: write # Update PRs
 
     steps:
+      # Step 1: Get the source code with full history
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Required for semantic release
 
+      # Step 2: Setup Node.js with caching
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # Step 4: Run semantic release to:
+      # - Analyze conventional commits
+      # - Determine version bump
+      # - Create GitHub release
+      # - Update CHANGELOG.md
+      # - Tag the release
       - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_ENV: production
         run: npm run release
 
+  # Job 3: Docker Build and Push
+  # Builds multi-platform Docker images and pushes to Docker Hub
   docker:
-    needs: test-and-build
+    needs: test-and-build  # Wait for tests to pass first
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'  # Skip for PRs (security)
     permissions:
       contents: read
       id-token: write
 
     steps:
+      # Step 1: Get the source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Setup Docker Buildx for multi-platform builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Step 3: Authenticate with Docker Hub using stored credentials
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -94,26 +125,32 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Step 4: Generate Docker image metadata and tags
+      # Creates tags like: latest, v1.0.0, main-sha-abc123
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch          # Branch name tags
+            type=ref,event=pr              # PR number tags
+            type=semver,pattern={{version}} # Semantic version tags
+            type=semver,pattern={{major}}.{{minor}} # Major.minor tags
+            type=sha,prefix={{branch}}-    # Commit SHA tags
+            type=raw,value=latest,enable={{is_default_branch}} # Latest tag
 
+      # Step 5: Build and push Docker image
+      # - Multi-platform: linux/amd64, linux/arm64
+      # - Uses GitHub Actions cache for faster builds
+      # - Only pushes on actual pushes (not PRs)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64 
+          context: .  # Build context is current directory
+          push: ${{ github.event_name != 'pull_request' }}  # Only push on real pushes
+          tags: ${{ steps.meta.outputs.tags }}  # Use generated tags
+          labels: ${{ steps.meta.outputs.labels }}  # Add metadata labels
+          cache-from: type=gha  # Use GitHub Actions cache
+          cache-to: type=gha,mode=max  # Save cache for next build
+          platforms: linux/amd64,linux/arm64  # Multi-platform support 
