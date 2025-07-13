@@ -1,0 +1,45 @@
+name: Conventional Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --if-present
+
+      - name: Build application
+        run: npm run build
+
+      - name: Conventional Release
+        uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: node
+          package-name: test-site
+          bump-minor-pre-major: true
+          bump-patch-for-minor-pre-major: true
+          include-v-in-tag: true
+          release-labels: |
+            release: pending
+            release: published 
