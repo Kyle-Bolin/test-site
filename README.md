@@ -59,7 +59,14 @@ This project uses Docker Hub for container registry. Follow these steps to set u
 4. Set appropriate permissions (read/write for repositories)
 5. Copy the token (you'll need this for GitHub secrets)
 
-#### 3. Configure GitHub Secrets
+#### 3. Create Docker Hub Repository
+1. Go to [Docker Hub](https://hub.docker.com/)
+2. Click **"Create Repository"**
+3. Set **Repository name** to `test-site`
+4. Set **Visibility** to **Public** or **Private** (your choice)
+5. Click **"Create"**
+
+#### 4. Configure GitHub Secrets
 In your GitHub repository, go to **Settings** → **Secrets and variables** → **Actions** and add:
 
 - `DOCKERHUB_USERNAME`: Your Docker Hub username
@@ -145,10 +152,10 @@ Images are automatically pushed to Docker Hub with tags:
 ### Manual Deployment
 ```bash
 # Pull latest image
-docker pull your-username/test-site:latest
+docker pull kyle-bolin/test-site:latest
 
 # Run in production
-docker run -p 3000:3000 -e NODE_ENV=production your-username/test-site:latest
+docker run -p 3000:3000 -e NODE_ENV=production kyle-bolin/test-site:latest
 ```
 
 ## Learn More
