@@ -1,6 +1,6 @@
-# Test Site
+# Ferrous - Linktree
 
-A modern Next.js application with Docker containerization, semantic versioning, and automated CI/CD pipeline.
+A modern, customizable Linktree-style website built with Next.js, featuring social links, profile section, and automated CI/CD pipeline.
 
 ## Features
 
@@ -8,9 +8,12 @@ A modern Next.js application with Docker containerization, semantic versioning, 
 - 🐳 **Docker** multi-stage builds with standalone output
 - 🔄 **Semantic Versioning** with conventional commits
 - 🚀 **GitHub Actions** CI/CD pipeline
-- 🎨 **Tailwind CSS v4** for styling
+- 🎨 **Tailwind CSS v3** for styling
 - 📝 **TypeScript** for type safety
 - 🔒 **Trusted tools only** (no Google/Microsoft/Intuit dependencies)
+- 🌟 **Modern Linktree Design** with gradient backgrounds
+- 📱 **Responsive Design** works on all devices
+- ⚙️ **Easy Customization** via configuration files
 
 ## Quick Start
 
@@ -107,11 +110,55 @@ git commit -m "feat(api)!: change data format"         # Major release
 ├── .github/workflows/    # CI/CD pipeline
 ├── docs/                 # Documentation
 ├── src/app/             # Next.js app router
+├── src/config/          # Configuration files
+│   └── links.ts         # Linktree content configuration
 ├── public/              # Static assets
 ├── Dockerfile           # Multi-stage Docker build
 ├── .releaserc.json      # Semantic release config
 └── package.json         # Dependencies and scripts
 ```
+
+## Customization
+
+### Updating Links and Profile
+Edit `src/config/links.ts` to customize your Linktree:
+
+```typescript
+// Profile Configuration
+export const profile: Profile = {
+  name: "Your Name",
+  title: "Your Title",
+  bio: "Your bio description",
+  avatar: "YN" // Your initials or image URL
+};
+
+// Main Links Configuration
+export const links: Link[] = [
+  {
+    title: "Your Website",
+    url: "https://yoursite.com",
+    color: "bg-gradient-to-r from-blue-500 to-purple-600"
+  },
+  // Add more links...
+];
+
+// Social Links Configuration
+export const socialLinks: SocialLink[] = [
+  {
+    platform: "GitHub",
+    url: "https://github.com/yourusername",
+    icon: "🐙"
+  },
+  // Add more social links...
+];
+```
+
+### Available Color Gradients
+- `bg-gradient-to-r from-blue-500 to-purple-600`
+- `bg-gradient-to-r from-green-500 to-emerald-600`
+- `bg-gradient-to-r from-red-500 to-pink-600`
+- `bg-gradient-to-r from-yellow-500 to-orange-600`
+- `bg-gradient-to-r from-indigo-500 to-purple-600`
 
 ## Development
 
